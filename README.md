@@ -12,3 +12,20 @@ tsc --init
 
 # 创建 package.json
 npm init -y
+
+# 安装 Vite
+```js
+npm: npm init vite@latest
+
+yarn: yarn create vite
+
+pnpm: pnpm create vite
+```
+
+# 使用 vite 创建
+```js
+npm init vite-app <project-name>
+cd <project-name>
+npm install
+npm run dev
+```
