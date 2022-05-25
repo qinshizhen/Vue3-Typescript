@@ -1,55 +1,48 @@
 <template>
-  <h2>toRaw 与 markRaw</h2>
-  <h3>state: {{ state }}</h3>
-  <button @click="testToRaw">测试toRaw</button>
-  <button @click="testMarkRaw">测试markRaw</button>
+    <h2>customRef</h2>
+    <input type="text" v-model="keyword">
+    <p>{{ keyword }}</p>
 </template>
 
-<script lang="ts">
-import { defineComponent, reactive, toRaw, markRaw } from 'vue'
+<script lang='ts'>
+import { defineComponent, customRef } from 'vue'
 
-interface UserInfo {
-  name: string;
-  age: number;
-  likes?: string[];
+/**
+ * 创建一个自定义的 ref，并对其依赖项跟踪和更新触发进行显式控制
+ * 需求: 使用 customRef 实现 debounce(防抖) 的示例
+ */
+
+function useDebouncedRef<T> (value: T, delay = 200) {
+	// 准备一个存储定时器的id的变量
+	let timeOutId: number
+	return customRef( (track, trigger) => {
+		return {
+			// 返回数据
+			get() {
+				track()
+				return value
+			},
+			// 设置数据
+			set(newValue: T) {
+				clearTimeout(timeOutId)
+				timeOutId = setTimeout(() => {
+					value = newValue;
+					trigger()
+				}, delay)
+			}
+		}
+	})
 }
 export default defineComponent({
-
-/*
-  toRaw
-    返回由 reactive 或 readonly 方法转换成响应式代理的普通对象。
-    这是一个还原方法，可用于临时读取，访问不会被代理/跟踪，写入时也不会触发界面更新。
-  markRaw
-    一个对象，使其永远不会转换为代理。返回对象本身
-  应用场景:
-    有些值不应被设置为响应式的，例如复杂的第三方类实例或 Vue 组件对象。
-    当渲染具有不可变数据源的大列表时，跳过代理转换可以提高性能。
-*/
-  setup() {
-    const state = reactive<UserInfo>({
-      name: 'tom',
-      age: 25,
-    })
-
-    const testToRaw = () => {
-      // const user = toRaw(state)
-      // user.age++  // 界面不会更新
+    name: 'App',
+    setup() {
+		const keyword = useDebouncedRef('abc', 1000)
+        return {
+			keyword
+		}
     }
-
-    const testMarkRaw = () => {
-      const likes = ['a', 'b']
-      state.likes = likes  // 
-      // state.likes = markRaw(likes) // likes数组就不再是响应式的了
-      // setTimeout(() => {
-      //   state.likes[0] += '--'
-      // }, 1000)
-    }
-
-    return {
-      state,
-      testToRaw,
-      testMarkRaw,
-    }
-  },
 })
 </script>
+
+<style lang='scss' scoped>
+</style>
