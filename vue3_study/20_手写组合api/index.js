@@ -10,6 +10,7 @@
 const reactiveHandler = {
     // 获取属性值
     get( target, prop ) {
+        if (prop === "_is_reactive") return true;
         const result = Reflect.get(target, prop);
         console.log('拦截了读取数据', prop, result);
         return result
@@ -63,22 +64,109 @@ function reactive( target ) {
 
 
 /**
+ * shallowReadonly 与 readonly
+ */
+// 定义了一个 readonlyHandler 处理器
+const readonlyHandler = {
+    get(target, prop) {
+        if (prop === '_is_readonly') return true;
+        const result = Reflect.get(target, prop);
+        console.log('拦截到了读取数据', prop, result);
+        return result
+    },
+    set(target, prop, value) {
+        console.warn('只能读取数据，不能修改数据或者添加数据');
+        return true
+    },
+    deleteProperty(target, prop) {
+        console.warn('只能读取数据，不能删除数据');
+        return true
+    }
+}
+
+// 定义一个 shallowReadonly 函数
+function shallowReadonly(target) {
+    // 需要判断当前的数据是不是对象
+    if(target && typeof target === 'object') {
+        return new Proxy(target, readonlyHandler)
+    }
+    return target
+}
+// 定义一个 readonly 函数
+function readonly(target) {
+    // 需要判断当前的数据是不是对象
+    if(target && typeof target === 'object') {
+        // 判断target是不是数组
+        if (Array.isArray(target)) {
+            target.forEach((item, index) => {
+                target[index] = readonly(item);
+            })
+        } else { // 是不是对象
+            Object.keys(target).forEach(key => {
+                target[key] = readonly(target[key])
+            })
+        }
+        return new Proxy(target, readonlyHandler)
+    }
+    return target
+}
+
+
+/**
  * shallowRef 与 ref
  */
 
-
-
-
-
+// 定义一个 shallowRef 函数
+function shallowRef(target) {
+    return {
+        // 保存 target 数据保存起来
+        _value: target,
+        get value() {
+            console.log("劫持到了读取数据");
+            return this._value
+        },
+        set value(val) {
+            console.log('劫持到了修改数据，准备更新界面', val);
+            this._value = val;
+        }
+    }
+}
+// 定义一个 ref 函数
+function ref(target) {
+    target = reactive(target)
+    return {
+        _is_ref: true, // 标识当前的对象是 ref 对象
+        // 保存 target 数据保存起来
+        _value: target,
+        get value() {
+            console.log("劫持到了读取数据");
+            return this._value
+        },
+        set value(val) {
+            console.log('劫持到了修改数据，准备更新界面', val);
+            this._value = val;
+        }
+    }
+}
 
 /**
- * shallowReadonly 与 readonly
+ * isRef, isReactive, isReadonly 和 isProxy
  */
 
-
-
-/**
- * isRef, isReactive 与 isReadonly
- */
-
+// 定义一个函数 isRef 函数，判断当前的对象是不是 ref 对象
+function isRef(obj) {
+    return  obj && obj._is_ref
+}
+// 定义一个函数 isReactive 函数，判断当前的对象是不是 reactive 对象
+function isReactive(obj) {
+    return  obj && obj._is_reactive
+}
+// 定义一个函数 isReadonly 函数，判断当前的对象是不是 readonly 对象
+function isReadonly(obj) {
+    return  obj && obj._is_readonly
+}
+// 定义一个函数 isProxy 函数，判断当前的对象是不是 reactive 对象 或 readonly 对象
+function isProxy(obj) {
+    return  isReactive(obj) || isReadonly(obj)
+}
 

@@ -13,8 +13,9 @@
 <script type="text/javascript">
     
     /**
-     * shallowReactive
+     * shallowReactive && reactive
      */
+
     // const proxyUser1 = shallowReactive({
     //     name: '小明',
     //     car: {
@@ -26,9 +27,7 @@
     // delete proxyUser1.name  // 拦截到了删除数据
     // delete proxyUser1.car.color  // 拦截到了读取数据，但是拦截不到删除数据 // 浅劫持
 
-    /**
-     * reactive
-     */
+
     // const proxyUser2 = reactive({
     //     name: '小明',
     //     car: {
@@ -39,6 +38,69 @@
     // proxyUser2.car.color += '小明小明'; // 拦截到了读和写的数据 // 深劫持
     // delete proxyUser2.name  // 拦截到了删除数据
     // delete proxyUser2.car.color  // 拦截到了删除数据 // 深劫持
+
+    // ======================================
+
+    /**
+     * shallowReadonly && readonly
+     */
+    // const proxyUser3 = shallowReadonly({
+    //     name: '小明',
+    //     cars: ['奔驰', 'BMW']
+    // })
+    // console.log(proxyUser3.name) //拦截到了读取
+    // proxyUser3.name = '===' // 不能修改
+    // delete proxyUser3.name // 不能删除
+    // proxyUser3.cars[0] = 'aodi' // 拦截到了读取，可以修改
+    // delete proxyUser3.cars[0] // 拦截到了读取，可以删除
+
+
+    const proxyUser4 = readonly({
+        name: '小明',
+        cars: ['奔驰', 'BMW']
+    })
+    // console.log(proxyUser4.name) //拦截到了读取
+    // console.log(proxyUser4.cars[0]) //拦截到了读取
+    // proxyUser4.name = '===' // 不能修改
+    // proxyUser4.cars[0] = '===' // 不能修改
+    // delete proxyUser4.name // 不能删除
+    // delete proxyUser4.cars[0] // 不能删除
+
+    // ======================================
+
+    /**
+     * shallowRef && ref
+     */
+    // const ref1 = shallowRef({
+    //     name: '小明',
+    //     cars: {
+    //         color: 'red'
+    //     }
+    // })
+    // console.log(ref1.value); // 可以读取
+    // ref1.value = '===' // 可以劫持
+    // ref1.value.car = '----' // 劫持不到
+
+    // const ref2 = ref({
+    //     name: '小明',
+    //     cars: {
+    //         color: 'red'
+    //     }
+    // })
+    // console.log(ref2.value); // 可以读取
+    // ref2.value = '===' // 可以劫持
+    // ref2.value.car = '----' // 可以劫持
+
+    // ======================================
+
+    /**
+     * isRef, isReactive, isReadonly 和 isProxy
+     */
+    console.log(isRef(ref({})));
+    console.log(isReactive(reactive({})));
+    console.log(isReadonly(readonly({})));
+    console.log(isProxy(reactive({})));
+    console.log(isProxy(readonly({})));
 
 </script>
 </html>
